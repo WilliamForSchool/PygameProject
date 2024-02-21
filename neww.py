@@ -21,7 +21,10 @@ class Car(pygame.sprite.Sprite):
 		
 	# Override
 	def update(self):
-		self.forward()
+		keys = pygame.key.get_pressed()
+		
+		if keys[pygame.K_w]:
+			self.forward()
 		
 # Start of the main execution
 
