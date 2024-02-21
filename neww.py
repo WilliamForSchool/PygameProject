@@ -25,6 +25,10 @@ class Car(pygame.sprite.Sprite):
 		
 # Start of the main execution
 
+def clearScreen(): 
+	pygame.draw.rect(screen, 'Black', pygame.Rect(0,0,800,600))
+
+
 pygame.init() # initialize and start the pygame engine
 screen = pygame.display.set_mode((800, 600)) # open a window with size
 clock = pygame.time.Clock() # allows us to set FPS rates
@@ -38,6 +42,7 @@ while True:
 		if event.type == pygame.QUIT:
 			pygame.quit()
 			exit()
+	clearScreen()
 	car1.draw(screen)
 	car1.update()
 	pygame.display.update()
