@@ -1,5 +1,6 @@
 import pygame
-from sys import exit 
+from sys import exit
+import math 
 from random import randint
 
 class Car(pygame.sprite.Sprite):
@@ -14,16 +15,19 @@ class Car(pygame.sprite.Sprite):
 		var.replace((220,0,0), (randint(0,255), randint(0,255), randint(0,255)))
 		self.x = 300.0 # store x independently of rectangle so that it can be a double 
 		self.y = 400.0
-		self.angle = 0;
+		self.gear = 1 
+		self.angle = 0
 		self.master_image = self.image
 		self.master_rect = self.rect # keep a copy of the original rectangle for rotation
 		
 	def forward(self): 
-		self.x += 2
+		self.x = self.x + self.gear * math.cos(self.angle/180 * math.pi)
+		self.y = self.y + self.gear * math.sin(self.angle/180*math.pi)
 		self.rect.center = (self.x, self.y)
 		
 	def back(self): 
-		self.x -= 2
+		self.x = self.x - self.gear * math.cos(self.angle/180 * math.pi)
+		self.y = self.y - self.gear * math.sin(self.angle/180*math.pi)
 		self.rect.center = (self.x, self.y)
 		
 	def player_input(self):
