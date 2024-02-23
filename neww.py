@@ -15,20 +15,24 @@ class Car(pygame.sprite.Sprite):
 		var.replace((220,0,0), (randint(0,255), randint(0,255), randint(0,255)))
 		self.x = 300.0 # store x independently of rectangle so that it can be a double 
 		self.y = 400.0
+		self.changingGearUp = False
+		self.changingGearDown = False
 		self.gear = 1 
 		self.angle = 0
 		self.master_image = self.image
 		self.master_rect = self.rect # keep a copy of the original rectangle for rotation
 		
 	def forward(self): 
-		self.x = self.x + self.gear * math.cos(self.angle/180 * math.pi)
-		self.y = self.y + self.gear * math.sin(self.angle/180*math.pi)
-		self.rect.center = (self.x, self.y)
+		if(not self.gear == 0):
+			self.x = self.x + self.gear * math.cos(self.angle/180 * math.pi)
+			self.y = self.y + self.gear * math.sin(self.angle/180*math.pi)
+			self.rect.center = (self.x, self.y)
 		
 	def back(self): 
-		self.x = self.x - self.gear * math.cos(self.angle/180 * math.pi)
-		self.y = self.y - self.gear * math.sin(self.angle/180*math.pi)
-		self.rect.center = (self.x, self.y)
+		if(not self.gear == 0): 
+			self.x = self.x - self.gear * math.cos(self.angle/180 * math.pi)
+			self.y = self.y - self.gear * math.sin(self.angle/180*math.pi)
+			self.rect.center = (self.x, self.y)
 		
 	def player_input(self):
 		keys = pygame.key.get_pressed()
@@ -36,7 +40,7 @@ class Car(pygame.sprite.Sprite):
 		if keys[pygame.K_w]:
 			self.forward()
 		if keys[pygame.K_a]:
-			self.angle -= 2
+			self.angle -= 3
 			if self.angle < 0: 
 				self.angle = 359 
 			self.image = pygame.transform.rotate(self.master_image, 360 - self.angle)
@@ -44,10 +48,24 @@ class Car(pygame.sprite.Sprite):
 		if keys[pygame.K_s]:
 			self.back()
 		if keys[pygame.K_d]:
-			self.angle = (self.angle + 2) % 360
+			self.angle = (self.angle + 3) % 360
 			self.image = pygame.transform.rotate(self.master_image, 360 - self.angle)
 			self.rect = self.image.get_rect(center = self.rect.center)
-
+		
+		if keys[pygame.K_LSHIFT]:
+			if not self.changingGearUp: 
+				self.gear = self.gear + 1
+				self.changingGearUp = True 
+		else: 
+			self.changingGearUp = False
+			
+		if keys[pygame.K_RSHIFT]:
+			if not self.changingGearDown: 
+				self.gear = self.gear - 1
+				self.changingGearDown = True 
+		else: 
+			self.changingGearDown = False
+		
 	# Override
 	def update(self):
 		self.player_input()
