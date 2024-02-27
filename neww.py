@@ -23,9 +23,9 @@ class Map:
 		for wall in self.walls: 
 			if wall.colliderect(car.getRect()):
 				print("Collision")
-				return True
+				return wall
 				
-		return False
+		return None
 		
 
 
@@ -53,11 +53,11 @@ class Car(pygame.sprite.Sprite):
 		self.createNewDNA()
 		
 	def createNewDNA(self):
-		for i in range(100):
+		for i in range(10000):
 			prob = randint(1, 100) 
-			if prob <= 80:
+			if prob <= 70:
 				self.dna.append(0)
-			elif prob <= 85:
+			elif prob <= 80:
 				self.dna.append(1) # turn left
 			elif prob <= 90:
 				self.dna.append(2) # right
@@ -75,7 +75,7 @@ class Car(pygame.sprite.Sprite):
 			self.y = self.y + self.gear * math.sin(self.angle/180*math.pi)
 			self.rect.center = (self.x, self.y)
 			
-		if map.checkMapCollision(self):
+		if map.checkMapCollision(self) != None:
 			self.x = oldx
 			self.y = oldy
 			self.rect.center = (self.x, self.y)
@@ -88,7 +88,7 @@ class Car(pygame.sprite.Sprite):
 			self.y = self.y - self.gear * math.sin(self.angle/180*math.pi)
 			self.rect.center = (self.x, self.y)
 			
-		if map.checkMapCollision(self):
+		if map.checkMapCollision(self) != None:
 			self.x = oldx
 			self.y = oldy
 			self.rect.center = (self.x, self.y)
@@ -152,11 +152,11 @@ class Car(pygame.sprite.Sprite):
 			if self.currentIndex < len(self.dna):
 				if(self.dna[self.currentIndex] == 1):
 					self.rotateLeft()
-				if(self.dna[self.currentIndex] == 2):
+				elif(self.dna[self.currentIndex] == 2):
 					self.rotateRight()
-				if(self.dna[self.currentIndex] == 3):
+				elif(self.dna[self.currentIndex] == 3):
 					self.gearDown()
-				if(self.dna[self.currentIndex] == 4):
+				elif(self.dna[self.currentIndex] == 4):
 					self.gearUp()
 			
 			self.forward(map)
@@ -166,6 +166,7 @@ class Car(pygame.sprite.Sprite):
 		
 	# Override
 	def update(self, map):
+		
 		self.player_input(map)
 		self.stepAI(map)
 		
@@ -192,8 +193,9 @@ screen = pygame.display.set_mode((800, 500)) # open a window with size
 clock = pygame.time.Clock() # allows us to set FPS rates
 
 # make a single Car object
-car1 = pygame.sprite.GroupSingle()
-car1.add(Car())
+cars = pygame.sprite.Group()
+for i in range(100):
+	cars.add(Car())
 
 map1 = Map()
 createMap1()
@@ -205,10 +207,10 @@ while True:
 			pygame.quit()
 			exit()
 	clearScreen()
-	car1.update(map1)
-	map1.checkMapCollision(car1.sprite)
+	cars.update(map1)
+	# map1.checkMapCollision(cars.sprite)
 	
 	map1.draw(screen)
-	car1.draw(screen)
+	cars.draw(screen)
 	pygame.display.update()
 	clock.tick(60)
