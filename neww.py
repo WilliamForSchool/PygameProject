@@ -28,14 +28,14 @@ class Map:
         for wall in self.walls:
             if wall.colliderect(car.getRect()):
                 return wall
+                
+        for i in range(0, len(self.checkpoint)):
+            if self.checkpoint[i].colliderect(car.getRect()):
+                car.hitCheckPoint(i)
+                break
         return None
 
-    def checkCheckpoint(self, car):
-        for checkpoint in self.checkpoint:
-            if checkpoint.colliderect(car.getRect()):
-                    return checkpoint
-            else:
-                return None
+    
 
 
 class Car(pygame.sprite.Sprite):
@@ -58,6 +58,8 @@ class Car(pygame.sprite.Sprite):
         self.dna = []
         self.currentIndex = 0
         self.createNewDNA()
+        self.checks = [False, False, False, False, False, False, False, False, False]
+        self.score = 0
 
     def createNewDNA(self):
         for i in range(10000):
@@ -72,8 +74,27 @@ class Car(pygame.sprite.Sprite):
                 self.dna.append(3)  # gear down
             else:
                 self.dna.append(4)  # gear up
+				
+				
+				
+    def hitCheckPoint(self, num):
+        if num == 0 and not self.checks[0]: 
+            print("score")
+            self.checks[num] = True
+            self.score += 5
+        if num == 8 and not self.checks[8]: 
+            if self.checks[7] == True: 
+                self.checks = [False, False, False, False, False, False, False, False, False]
+                self.score += 50
+        elif self.checks[num - 1] and not self.checks[num]: 
+            self.checks[num] = True
+            self.score += 5
+            
+            
+        
 
     def forward(self, map):
+        
         oldx = self.x
         oldy = self.y
         if (not self.gear == 0):
@@ -81,13 +102,13 @@ class Car(pygame.sprite.Sprite):
             self.y = self.y + self.gear * math.sin(self.angle / 180 * math.pi)
             self.rect.center = (self.x, self.y)
 
-        if map.checkMapCollision(self) != None:
+        collisionRect = map.checkMapCollision(self)
+        if collisionRect != None:
             self.x = oldx
             self.y = oldy
             self.rect.center = (self.x, self.y)
 
-        if(map.checkCheckpoint(self) != None):
-            print("checkpoint")
+      
 
 
 
@@ -130,6 +151,9 @@ class Car(pygame.sprite.Sprite):
 
     def getRect(self):
         return self.rect
+        
+    def getScore(self): 
+        return self.score
 
     def player_input(self, map):
         keys = pygame.key.get_pressed()
@@ -173,7 +197,7 @@ class Car(pygame.sprite.Sprite):
 
     # Override
     def update(self, map):
-
+        pygame.draw.rect(screen, (255, 0, 0), self.rect)
         self.player_input(map)
         self.stepAI(map)
 
@@ -201,11 +225,22 @@ def createMap1():
     map1.addCheckPoint(pygame.Rect(200, 360, 10, 80))  # 6
     map1.addCheckPoint(pygame.Rect(50, 350, 120, 10))  # 7
     map1.addCheckPoint(pygame.Rect(50, 140, 120, 10))  # 8
-    map1.addCheckPoint(pygame.Rect(200, 60, 10, 90))  # 9
+    map1.addCheckPoint(pygame.Rect(250, 60, 10, 90))  # 9
 
 
 
-
+def sortCarsByScore(): 
+    listOfCars = cars.sprites()
+    for i in range(0, len(listOfCars) - 1): 
+        for j in range(0, len(listOfCars) - 2): 
+            if listOfCars[j].getScore() < listOfCars[j+1].getScore():
+                temp = listOfCars[j]
+                listOfCars[j] = listOfCars[j+1]
+                listOfCars[j+1] = temp
+                
+                
+    return listOfCars
+          
 
 
 
@@ -227,12 +262,15 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
+            sorted = sortCarsByScore()
+            for c in sorted:
+                print(c.getScore())
             exit()
     clearScreen()
     cars.update(map1)
-    # map1.checkMapCollision(cars.sprite)
 
     map1.draw(screen)
     cars.draw(screen)
     pygame.display.update()
     clock.tick(60)
+    
