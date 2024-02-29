@@ -5,11 +5,14 @@ from random import randint
 
 
 class Map:
-
     def __init__(self):
         self.walls = []
+        self.checkpoint = [] # checkpoint walls
 
     # 							   x,  y,  width, height
+
+    def addCheckPoint(self, wall):
+        self.checkpoint.append(wall)
 
     def addWall(self, wall):
         self.walls.append(wall)
@@ -18,14 +21,21 @@ class Map:
         # 				  screen,  color,         rectangle
         for wall in self.walls:
             pygame.draw.rect(surface, (255, 255, 255), wall)
+        for checkpoint in self.checkpoint:
+            pygame.draw.rect(surface, (255, 0, 255), checkpoint)
 
     def checkMapCollision(self, car):
         for wall in self.walls:
             if wall.colliderect(car.getRect()):
-                print("Collision")
                 return wall
-
         return None
+
+    def checkCheckpoint(self, car):
+        for checkpoint in self.checkpoint:
+            if checkpoint.colliderect(car.getRect()):
+                    return checkpoint
+            else:
+                return None
 
 
 class Car(pygame.sprite.Sprite):
@@ -33,7 +43,7 @@ class Car(pygame.sprite.Sprite):
     ## constructor
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load('/Users/bradley/Downloads/untitled/graphics/pure_red_car_32.png').convert_alpha()
+        self.image = pygame.image.load('graphics\pure_red_car_32.png').convert_alpha()
         self.rect = self.image.get_rect(center=(200, 100))
         var = pygame.PixelArray(self.image)
         var.replace((220, 0, 0), (randint(0, 255), randint(0, 255), randint(0, 255)))
@@ -48,9 +58,6 @@ class Car(pygame.sprite.Sprite):
         self.dna = []
         self.currentIndex = 0
         self.createNewDNA()
-        self.vel = 0  # velocity vector of the car?
-        self.acceleration = 0 # acceleration of the car
-
 
     def createNewDNA(self):
         for i in range(10000):
@@ -69,20 +76,19 @@ class Car(pygame.sprite.Sprite):
     def forward(self, map):
         oldx = self.x
         oldy = self.y
-
         if (not self.gear == 0):
-            self.vel = self.gear * math.cos(self.angle / 180 * math.pi) # might not need
-            self.acceleration = self.vel / 60 # might not
-            self.x = self.x + self.vel
-
-            # Velocity max is the gear
+            self.x = self.x + self.gear * math.cos(self.angle / 180 * math.pi)
             self.y = self.y + self.gear * math.sin(self.angle / 180 * math.pi)
             self.rect.center = (self.x, self.y)
 
         if map.checkMapCollision(self) != None:
-            self.vel = -self.vel
-            self.gear = -self.gear
-            
+            self.x = oldx
+            self.y = oldy
+            self.rect.center = (self.x, self.y)
+
+        if(map.checkCheckpoint(self) != None):
+            print("checkpoint")
+
 
 
     def back(self, map):
@@ -97,6 +103,8 @@ class Car(pygame.sprite.Sprite):
             self.x = oldx
             self.y = oldy
             self.rect.center = (self.x, self.y)
+
+
 
     def rotateLeft(self):
         self.angle -= 3
@@ -151,7 +159,7 @@ class Car(pygame.sprite.Sprite):
         global index
 
         if self.currentIndex < len(self.dna):
-            if self.dna[self.currentIndex] == 1:
+            if (self.dna[self.currentIndex] == 1):
                 self.rotateLeft()
             elif (self.dna[self.currentIndex] == 2):
                 self.rotateRight()
@@ -165,8 +173,9 @@ class Car(pygame.sprite.Sprite):
 
     # Override
     def update(self, map):
-
+        pygame.draw.rect(screen, (255, 0, 0), self.rect)
         self.player_input(map)
+        #self.stepAI(map)
 
 
 # Start of the main execution
@@ -184,6 +193,22 @@ def createMap1():
     map1.addWall(pygame.Rect(550, 60, 190, 125))
     map1.addWall(pygame.Rect(150, 140, 300, 220))
     map1.addWall(pygame.Rect(450, 260, 170, 100))  # left
+    map1.addCheckPoint(pygame.Rect(450, 150, 100, 10))  # 1
+    map1.addCheckPoint(pygame.Rect(600, 185, 10, 75))  # 2
+    map1.addCheckPoint(pygame.Rect(620, 350, 120, 10))  # 3
+    map1.addCheckPoint(pygame.Rect(600, 360, 10, 80))  # 4
+    map1.addCheckPoint(pygame.Rect(400, 360, 10, 80))  # 5
+    map1.addCheckPoint(pygame.Rect(200, 360, 10, 80))  # 6
+    map1.addCheckPoint(pygame.Rect(50, 350, 120, 10))  # 7
+    map1.addCheckPoint(pygame.Rect(50, 140, 120, 10))  # 8
+    map1.addCheckPoint(pygame.Rect(200, 60, 10, 90))  # 9
+
+
+
+
+
+
+
 
 
 pygame.init()  # initialize and start the pygame engine
@@ -191,8 +216,9 @@ screen = pygame.display.set_mode((800, 500))  # open a window with size
 clock = pygame.time.Clock()  # allows us to set FPS rates
 
 # make a single Car object
-cars = pygame.sprite.GroupSingle()
-cars.add(Car())
+cars = pygame.sprite.Group()
+for i in range(5):
+    cars.add(Car())
 
 map1 = Map()
 createMap1()
