@@ -64,11 +64,19 @@ class Car(pygame.sprite.Sprite):
         self.currentIndex = 0
         self.checks = [False, False, False, False, False, False, False, False, False]
         self.score = 0
+        
 
         
     def combineDNA(self, parent1, parent2): 
-        randomNum = randint(0, 1000 - 1)
+        randomNum = randint(0, 6250 - 1)
         list = parent1.getDNA()[0:randomNum] + parent2.getDNA()[randomNum + 1: len(parent2.getDNA())]
+        for i in range(0, len(list)):
+            random1 = randint(0, 100)
+            random2 = randint(0, 4)
+            if random1 > 80: 
+                list[i] = random2
+            
+               
         return list
         
 
@@ -77,15 +85,15 @@ class Car(pygame.sprite.Sprite):
         return self.dna
 
     def createNewDNA(self):
-        for i in range(1000):
+        for i in range(6250):
             prob = randint(1, 100)
-            if prob <= 50:
+            if prob <= 30:
                 self.dna.append(0)
-            elif prob <= 75:
+            elif prob <= 60:
                 self.dna.append(1)  # turn left
-            elif prob <= 95:
+            elif prob <= 90:
                 self.dna.append(2)  # right
-            elif prob <= 97:
+            elif prob <= 95:
                 self.dna.append(3)  # gear down
             else:
                 self.dna.append(4)  # gear up
@@ -95,14 +103,15 @@ class Car(pygame.sprite.Sprite):
     def hitCheckPoint(self, num):
         if num == 0 and not self.checks[0]: 
             self.checks[num] = True
-            self.score += 5
+            self.score += (6000-self.currentIndex) + 5
         if num == 8 and not self.checks[8]: 
             if self.checks[7] == True: 
                 self.checks = [False, False, False, False, False, False, False, False, False]
-                self.score += 50
+                self.score += (6000-self.currentIndex) + 50
+                print("Done")
         elif self.checks[num - 1] and not self.checks[num]: 
             self.checks[num] = True
-            self.score += 5
+            self.score += (6000-self.currentIndex) + 50
            
             
             
@@ -125,6 +134,10 @@ class Car(pygame.sprite.Sprite):
         
         oldx = self.x
         oldy = self.y
+        if self.gear >= 3:
+            self.gear = 3
+        if self.gear <= -3:
+            self.gear = -3
         if (not self.gear == 0):
             self.x = self.x + self.gear * math.cos(self.angle / 180 * math.pi)
             self.y = self.y + self.gear * math.sin(self.angle / 180 * math.pi)
@@ -136,7 +149,7 @@ class Car(pygame.sprite.Sprite):
             self.x = oldx
             self.y = oldy
             self.rect.center = (self.x, self.y)
-            self.score -= 5
+
 
       
 
@@ -154,7 +167,7 @@ class Car(pygame.sprite.Sprite):
             self.x = oldx
             self.y = oldy
             self.rect.center = (self.x, self.y)
-            self.score -= 10
+
 
 
 
@@ -219,9 +232,11 @@ class Car(pygame.sprite.Sprite):
             elif (self.dna[self.currentIndex] == 2):
                 self.rotateRight()
             elif (self.dna[self.currentIndex] == 3):
+                
                 self.gearDown()
-                self.score -= 2
+                
             elif (self.dna[self.currentIndex] == 4):
+                
                 self.gearUp()
 
         self.forward(map)
@@ -266,8 +281,8 @@ def killBottomHalf(sortedList):
     
 def makeBabyCars(sortedList): 
     for i in range(0,len(sortedList)):
-        parent1 = sortedList[randint(0,len(sortedList) - 1)]
-        parent2 = sortedList[randint(0,len(sortedList) - 1)]
+        parent1 = sortedList[randint(0, int(len(sortedList)/10))]
+        parent2 = sortedList[randint(0, int(len(sortedList)/10))]
         sortedList.append(Car(parent1, parent2))
         
      
@@ -306,7 +321,7 @@ clock = pygame.time.Clock()  # allows us to set FPS rates
 
 # make a single Car object
 cars = pygame.sprite.Group()
-for i in range(300):
+for i in range(100):
     cars.add(Car())
 
 map1 = Map()
@@ -326,12 +341,11 @@ while True:
 
     map1.draw(screen)
     cars.draw(screen)
-    print(len(cars.sprites()))
-    print(generation)
     pygame.display.update()
     clock.tick(300)
     
     if cars.sprites()[0].generationOver():
         generation += 1
         createNextGeneration()
+        print(generation)
     
