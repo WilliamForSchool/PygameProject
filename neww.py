@@ -7,7 +7,7 @@ from random import randint
 class Map:
     def __init__(self):
         self.walls = []
-        self.checkpoint = [] # checkpoint walls
+        self.checkpoint = []  # checkpoint walls
 
     # 							   x,  y,  width, height
 
@@ -28,20 +28,18 @@ class Map:
         for wall in self.walls:
             if wall.colliderect(car.getRect()):
                 return wall
-                
+
         for i in range(0, len(self.checkpoint)):
             if self.checkpoint[i].colliderect(car.getRect()):
                 car.hitCheckPoint(i)
                 break
         return None
 
-    
-
 
 class Car(pygame.sprite.Sprite):
 
     ## constructor
-    def __init__(self, parent1 = None, parent2 = None):
+    def __init__(self, parent1=None, parent2=None):
         super().__init__()
         self.image = pygame.image.load('graphics\pure_red_car_32.png').convert_alpha()
         self.rect = self.image.get_rect(center=(200, 100))
@@ -55,33 +53,28 @@ class Car(pygame.sprite.Sprite):
         self.angle = 0
         self.master_image = self.image
         self.master_rect = self.rect  # keep a copy of the original rectangle for rotation
-        if parent1 == None or parent2 == None: 
+        if parent1 == None or parent2 == None:
             self.dna = []
             self.createNewDNA()
-            #createNewDNA(self)
-        else: 
+            # createNewDNA(self)
+        else:
             self.dna = self.combineDNA(parent1, parent2)
         self.currentIndex = 0
         self.checks = [False, False, False, False, False, False, False, False, False]
         self.score = 0
-        
 
-        
-    def combineDNA(self, parent1, parent2): 
+    def combineDNA(self, parent1, parent2):
         randomNum = randint(0, 6250 - 1)
         list = parent1.getDNA()[0:randomNum] + parent2.getDNA()[randomNum + 1: len(parent2.getDNA())]
         for i in range(0, len(list)):
             random1 = randint(0, 100)
             random2 = randint(0, 4)
-            if random1 > 80: 
+            if random1 < 8:
                 list[i] = random2
-            
-               
+
         return list
-        
 
-
-    def getDNA(self): 
+    def getDNA(self):
         return self.dna
 
     def createNewDNA(self):
@@ -94,44 +87,40 @@ class Car(pygame.sprite.Sprite):
             elif prob <= 90:
                 self.dna.append(2)  # right
             elif prob <= 95:
-                self.dna.append(3)  # gear down
+                pass
+                #self.dna.append(3)  # gear down
             else:
-                self.dna.append(4)  # gear up
-				
-				
-				
+                pass
+                #self.dna.append(4)  # gear up
+
     def hitCheckPoint(self, num):
-        if num == 0 and not self.checks[0]: 
+        if num == 0 and not self.checks[0]:
             self.checks[num] = True
-            self.score += (6000-self.currentIndex) + 5
-        if num == 8 and not self.checks[8]: 
-            if self.checks[7] == True: 
+            self.score += (6000 - self.currentIndex) + 5
+        if num == 8 and not self.checks[8]:
+            if self.checks[7] == True:
                 self.checks = [False, False, False, False, False, False, False, False, False]
-                self.score += (6000-self.currentIndex) + 50
+                self.score += (6000 - self.currentIndex) + 50
                 print("Done")
-        elif self.checks[num - 1] and not self.checks[num]: 
+        elif self.checks[num - 1] and not self.checks[num]:
             self.checks[num] = True
-            self.score += (6000-self.currentIndex) + 50
-           
-            
-            
-            
-    def generationOver(self): 
+            self.score += (6000 - self.currentIndex) + 50
+
+    def generationOver(self):
         return self.currentIndex >= len(self.dna)
-        
-    def reset(self): 
-        self.currentIndex = 0 
+
+    def reset(self):
+        self.currentIndex = 0
         self.rect = self.image.get_rect(center=(200, 100))
         self.score = 0
         self.x = 200.0
-        self.y  = 100.0
+        self.y = 100.0
         self.angle = 0
         self.gear = 1
         self.checks = [False, False, False, False, False, False, False, False, False]
-            
-
-    def forward(self, map):
         
+    def forward(self, map):
+        # stuckPosition type thing, where if the car is considered stuck, add more probability to turn in their combineDNA?
         oldx = self.x
         oldy = self.y
         if self.gear >= 3:
@@ -143,17 +132,14 @@ class Car(pygame.sprite.Sprite):
             self.y = self.y + self.gear * math.sin(self.angle / 180 * math.pi)
             self.rect.center = (self.x, self.y)
 
+
+
         collisionRect = map.checkMapCollision(self)
-        
+
         if collisionRect != None:
             self.x = oldx
             self.y = oldy
             self.rect.center = (self.x, self.y)
-
-
-      
-
-
 
     def back(self, map):
         oldx = self.x
@@ -167,9 +153,6 @@ class Car(pygame.sprite.Sprite):
             self.x = oldx
             self.y = oldy
             self.rect.center = (self.x, self.y)
-
-
-
 
     def rotateLeft(self):
         self.angle -= 3
@@ -195,8 +178,8 @@ class Car(pygame.sprite.Sprite):
 
     def getRect(self):
         return self.rect
-        
-    def getScore(self): 
+
+    def getScore(self):
         return self.score
 
     def player_input(self, map):
@@ -232,19 +215,18 @@ class Car(pygame.sprite.Sprite):
             elif (self.dna[self.currentIndex] == 2):
                 self.rotateRight()
             elif (self.dna[self.currentIndex] == 3):
-                
-                self.gearDown()
-                
+                pass
+                #self.gearDown()
+
             elif (self.dna[self.currentIndex] == 4):
-                
-                self.gearUp()
+                pass
+                #self.gearUp()
 
         self.forward(map)
         self.currentIndex += 1
 
     # Override
     def update(self, map):
-        pygame.draw.rect(screen, (255, 0, 0), self.rect)
         self.player_input(map)
         self.stepAI(map)
 
@@ -275,45 +257,41 @@ def createMap1():
     map1.addCheckPoint(pygame.Rect(250, 60, 10, 90))  # 9
 
 
-def killBottomHalf(sortedList): 
+def killBottomHalf(sortedList):
     sortedList = sortCarsByScore()
-    return sortedList[0:int(len(sortedList)/2)]
-    
-def makeBabyCars(sortedList): 
-    for i in range(0,len(sortedList)):
-        parent1 = sortedList[randint(0, int(len(sortedList)/10))]
-        parent2 = sortedList[randint(0, int(len(sortedList)/10))]
+    return sortedList[0:int(len(sortedList) / 2)]
+
+
+def makeBabyCars(sortedList):
+    for i in range(0, len(sortedList)):
+        parent1 = sortedList[randint(0, 4)]
+        parent2 = sortedList[randint(0, 4)]
         sortedList.append(Car(parent1, parent2))
-        
-     
-        
+
+
 def createNextGeneration():
     sortedList = sortCarsByScore()
     sortedList = killBottomHalf(sortedList)
-    for i in range(0, len(sortedList) - 1): 
+    for i in range(0, len(sortedList) - 1):
         sortedList[i].reset()
     makeBabyCars(sortedList)
     cars.empty()
     cars.add(sortedList)
-    
 
-def sortCarsByScore(): 
+
+def sortCarsByScore():
     listOfCars = cars.sprites()
-    for i in range(0, len(listOfCars) - 1): 
-        for j in range(0, len(listOfCars) - 2): 
-            if listOfCars[j].getScore() < listOfCars[j+1].getScore():
+    for i in range(0, len(listOfCars) - 1):
+        for j in range(0, len(listOfCars) - 2):
+            if listOfCars[j].getScore() < listOfCars[j + 1].getScore():
                 temp = listOfCars[j]
-                listOfCars[j] = listOfCars[j+1]
-                listOfCars[j+1] = temp
-                
-                
+                listOfCars[j] = listOfCars[j + 1]
+                listOfCars[j + 1] = temp
+
     return listOfCars
-          
 
 
 generation = 1
-
-
 
 pygame.init()  # initialize and start the pygame engine
 screen = pygame.display.set_mode((800, 500))  # open a window with size
@@ -333,7 +311,6 @@ while True:
             pygame.quit()
             sorted = sortCarsByScore()
             for c in sorted:
-               
                 print(c.getScore())
             exit()
     clearScreen()
@@ -343,9 +320,8 @@ while True:
     cars.draw(screen)
     pygame.display.update()
     clock.tick(300)
-    
+
     if cars.sprites()[0].generationOver():
         generation += 1
         createNextGeneration()
         print(generation)
-    
