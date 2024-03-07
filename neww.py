@@ -71,13 +71,13 @@ class Car(pygame.sprite.Sprite):
             random1 = randint(0, 120)
             
             if random1 < 2:
-                if(13 < len(list) - i):
-                    for l in range(i, i + 10):
+                if(5 < len(list) - i):
+                    for l in range(i, i + 4):
                         list[l] = 1
                     
             elif random1 < 4:
-                if(13 < len(list) - i):
-                    for p in range(i, i + 10):
+                if(5 < len(list) - i):
+                    for p in range(i, i + 4):
                         list[p] = 2
 
 
