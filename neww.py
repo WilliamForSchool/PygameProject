@@ -69,9 +69,16 @@ class Car(pygame.sprite.Sprite):
 
         for i in range(0, len(list)):
             random1 = randint(0, 120)
-            random2 = randint(0, 2)
-            if random1 < 7:
-                list[i] = random2
+            
+            if random1 < 2:
+                if(13 < len(list) - i):
+                    for l in range(i, i + 10):
+                        list[l] = 1
+                    
+            elif random1 < 4:
+                if(13 < len(list) - i):
+                    for p in range(i, i + 10):
+                        list[p] = 2
 
 
         return list
@@ -156,6 +163,9 @@ class Car(pygame.sprite.Sprite):
             self.x = oldx
             self.y = oldy
             self.rect.center = (self.x, self.y)
+            
+    def getSurface(self): 
+        return self.rect
 
     def rotateLeft(self):
         self.angle -= 3
@@ -267,8 +277,8 @@ def killBottomHalf(sortedList):
 
 def makeBabyCars(sortedList):
     for i in range(0, len(sortedList)):
-        parent1 = sortedList[randint(0, 1)]
-        parent2 = sortedList[randint(0, 1)]
+        parent1 = sortedList[randint(0, 0)]
+        parent2 = sortedList[randint(0, 0)]
         sortedList.append(Car(parent1, parent2))
 
 
@@ -308,7 +318,9 @@ for i in range(300):
 map1 = Map()
 createMap1()
 
+toggle = False
 while True:
+    keys = pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -320,7 +332,13 @@ while True:
     cars.update(map1)
 
     map1.draw(screen)
-    cars.draw(screen)
+    if keys[pygame.K_g]:
+        toggle = not toggle
+    if toggle: 
+        sorted = sortCarsByScore()
+        pygame.draw.rect(screen, (255, 0, 0), sorted[0])
+    else:
+        cars.draw(screen)
     pygame.display.update()
     clock.tick(500)
 
